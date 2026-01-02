@@ -1,7 +1,7 @@
 # 🥗 HUMAN NUTRITION RAG CHATBOT
 
 <p align="center">
-  <img src="docs/architecture.png" alt="System Architecture Diagram" width="800"/>
+  <img src="rag-ollama-diagram-c5e713fbc8bc1592f586a3107587519b.png" alt="System Architecture Diagram" width="800"/>
 </p>
 
 **Human Nutrition RAG Chatbot** is a full-stack **Retrieval-Augmented Generation (RAG)** system designed to answer nutrition-related questions using **human nutrition textbooks** as the sole source of truth.
