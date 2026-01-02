@@ -1,50 +1,248 @@
-# HUMAN NUTRITION RAG
+# 🥗 HUMAN NUTRITION RAG CHATBOT
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="docs/architecture.png" alt="System Architecture Diagram" width="800"/>
+</p>
 
-## Getting Started
+**Human Nutrition RAG Chatbot** is a full-stack **Retrieval-Augmented Generation (RAG)** system designed to answer nutrition-related questions using **human nutrition textbooks** as the sole source of truth.
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Geist, a font used in the project.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app).
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Demo Video
-
-Below is a clickable thumbnail that opens the YouTube video you provided. GitHub does not allow embedding YouTube iframes directly in READMEs, so this thumbnail links to the video on YouTube.
-
-[![Watch the demo](https://img.youtube.com/vi/98OSscUckXY/hqdefault.jpg)](https://youtu.be/98OSscUckXY)
-
-Or click here to open the video: https://youtu.be/98OSscUckXY
+Unlike generic chatbots, this system **grounds every response in retrieved textbook content**, significantly reducing hallucinations and improving factual reliability. The LLM runs **locally via Ollama**, ensuring privacy, offline capability, and full control over inference.
 
 ---
 
-If you prefer a different thumbnail size (maxres) or additional placement, tell me where to put it and I can update the README.
+## 🎥 Demo Video
+
+Below is a clickable thumbnail that opens the full demo on YouTube.  
+(GitHub does not support embedded iframes in READMEs.)
+
+[![Watch the demo](https://img.youtube.com/vi/98OSscUckXY/hqdefault.jpg)](https://youtu.be/98OSscUckXY)
+
+🔗 Direct link: https://youtu.be/98OSscUckXY
+
+---
+
+## ✨ Key Features
+
+- 📚 **Retrieval-Augmented Generation (RAG)**  
+  Retrieves relevant textbook chunks before generating answers.
+
+- 🧠 **Local LLM Inference**  
+  Uses **Gemma-2B via Ollama**, running entirely on the local machine.
+
+- 🔒 **Privacy-First Architecture**  
+  No external LLM APIs required during inference.
+
+- 📊 **Vector Search with Supabase**  
+  Stores and queries embeddings using cosine similarity.
+
+- 🔍 **Source-Aware Responses**  
+  Each answer includes **references to the retrieved document chunks**.
+
+- 🌗 **Modern UI**  
+  Responsive interface built with **Next.js + Tailwind CSS**.
+
+---
+
+## 🧠 System Architecture (High Level)
+
+```text
+Human Nutrition PDF
+        ↓
+Chunking & Embedding
+        ↓
+Supabase (Vector Storage)
+        ↓
+User Query → Embedding
+        ↓
+Similarity Search (Cosine)
+        ↓
+Relevant Chunks
+        ↓
+Ollama (Gemma-2B)
+        ↓
+Answer + Source References
+        ↓
+Next.js Frontend
+````
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+* **Framework:** Next.js 14 (App Router)
+* **Language:** TypeScript
+* **Styling:** Tailwind CSS
+* **Icons:** Lucide React
+* **Markdown Rendering:** `react-markdown`
+
+### Backend & AI
+
+* **LLM Runtime:** Ollama (Local)
+* **Model:** Gemma-2B
+* **Embedding Service:** Python (FastAPI / local service)
+* **Vector Database:** Supabase (pgvector)
+* **Similarity Metric:** Cosine Similarity
+
+---
+
+## 📂 Project Structure (Simplified)
+
+```text
+rag-chat/
+├── public/                   # Static assets (icons, images)
+├── src/
+│   ├── app/                  # Next.js App Router (UI + API routes)
+│   │   ├── page.tsx          # Main chat interface
+│   │   └── api/chat/route.ts # RAG pipeline (query → retrieval → LLM)
+│   ├── lib/
+│   │   ├── supabase.ts       # Supabase client configuration
+│   │   ├── embeddings.ts     # Query embedding logic
+│   │   └── utils.ts          # Shared utilities
+│   ├── models/               # Prompt templates / response schemas
+│   └── middleware.ts         # Next.js middleware (routing / security)
+│
+├── human-nutrition-text.pdf  # Source Human Nutrition textbook
+├── ingest.py                 # PDF ingestion & embedding generation
+├── test_embeddings.py        # Embedding similarity testing script
+│
+├── .env.local                # Local environment variables
+├── .env                      # Environment config (ignored in prod)
+├── package.json              # Node.js dependencies
+├── next.config.ts            # Next.js configuration
+├── tsconfig.json             # TypeScript configuration
+├── tailwind.config.ts        # Tailwind CSS config
+├── postcss.config.mjs        # PostCSS config
+├── eslint.config.mjs         # ESLint rules
+├── README.md                 # Project documentation
+└── .gitignore                # Git ignore rules
+
+```
+
+---
+
+## 🚀 Getting Started
+
+This project requires **three running components**:
+
+1. Embedding service
+2. Ollama (local LLM)
+3. Next.js frontend
+
+---
+
+### ✅ Prerequisites
+
+* Node.js (v18+)
+* Python (v3.10+)
+* Ollama → [https://ollama.com](https://ollama.com)
+* Supabase project with `pgvector` enabled
+
+---
+
+### 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/your-username/human-nutrition-rag.git
+cd human-nutrition-rag
+```
+
+---
+
+### 2️⃣ Run Ollama (Local LLM)
+
+```bash
+ollama pull gemma:2b
+ollama serve
+```
+
+Ollama runs at:
+
+```
+http://127.0.0.1:11434
+```
+
+---
+
+### 3️⃣ Start Embedding Server (Python)
+
+```bash
+python -m venv .venv
+
+# Activate
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+
+pip install fastapi uvicorn sentence-transformers torch
+python server.py
+```
+
+Embedding server runs at:
+
+```
+http://127.0.0.1:8000
+```
+
+---
+
+### 4️⃣ Setup Frontend (Next.js)
+
+```bash
+npm install
+npm run dev
+```
+
+Open:
+
+```
+http://localhost:3000
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### Ollama crashes due to GPU memory
+
+Force CPU mode:
+
+```powershell
+$env:OLLAMA_NUM_GPU=0
+ollama serve
+```
+
+---
+
+### Port 3000 already in use
+
+```powershell
+taskkill /F /IM node.exe
+```
+
+---
+
+## ☁️ Deployment Notes
+
+* Frontend can be deployed on **Vercel**
+* Ollama and embedding services **must run on a persistent server or local machine**
+* For cloud-only deployment, replace Ollama with a hosted LLM API
+
+---
+
+## 🎯 Use Cases
+
+* Nutrition education & learning
+* Academic question answering
+* Domain-specific RAG experimentation
+* Offline & privacy-preserving AI assistants
+
+---
+
+## 📜 License
+
+This project is intended for **educational and research purposes only**.
+
+```
