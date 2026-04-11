@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutri-RAG | Advanced Research Assistant</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons & Styling -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn" id="new-chat-btn">
+                    <i data-lucide="plus"></i>
+                    <span>New Research</span>
+                </button>
+                <button class="action-btn" id="sidebar-toggle" title="Collapse Sidebar">
+                    <i data-lucide="panel-left"></i>
+                </button>
+            </div>
+            
+            <div class="history-section">
+                <div class="history-label">Recent History</div>
+                <div class="history-list" id="history-list">
+                    <!-- History items will be injected here -->
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="action-btn" id="theme-toggle" title="Toggle Theme">
+                    <i data-lucide="sun"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="logo-area">
+                    <span class="logo-text">Nutri-RAG</span>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn" title="Settings">
+                        <i data-lucide="settings"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Chat Area -->
+            <div class="chat-feed" id="chat-feed">
+                <!-- Hero Section (Visible when feed is empty) -->
+                <div class="hero-container" id="hero-container">
+                    <div class="hero-icon-gradient">
+                        <i data-lucide="sparkles" size="40"></i>
+                    </div>
+                    <h2>How can I help you today?</h2>
+                    
+                    <div class="hero-suggestions">
+                        <div class="suggestion-card" onclick="setQuickQuery('What are the benefits of Vitamin A?')">
+                            <p>What are the benefits of Vitamin A?</p>
+                        </div>
+                        <div class="suggestion-card" onclick="setQuickQuery('List high-protein vegetarian foods')">
+                            <p>List high-protein vegetarian foods</p>
+                        </div>
+                        <div class="suggestion-card" onclick="setQuickQuery('Explain the role of magnesium in sleep')">
+                            <p>Explain the role of magnesium in sleep</p>
+                        </div>
+                        <div class="suggestion-card" onclick="setQuickQuery('Impact of sugar on metabolism')">
+                            <p>Impact of sugar on metabolism</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages will be injected here -->
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea id="chat-input" placeholder="Ask anything about nutrition..." rows="1"></textarea>
+                    <div class="input-actions">
+                        <button id="send-btn" class="action-btn" disabled>
+                            <i data-lucide="arrow-up"></i>
+                        </button>
+                    </div>
+                </div>
+                <div style="text-align: center; font-size: 0.7rem; color: var(--text-dim); margin-top: 10px;">
+                    Nutri-RAG can make mistakes. Always consult a healthcare professional.
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Source Modal -->
+    <div id="source-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 8px; font-weight: 600;">
+                    <i data-lucide="book-open"></i>
+                    <span>Research Context</span>
+                </div>
+                <button id="close-modal" class="action-btn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div id="modal-body" class="modal-body prose"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        lucide.createIcons();
+        function setQuickQuery(text) {
+            const input = document.getElementById('chat-input');
+            input.value = text;
+            input.dispatchEvent(new Event('input'));
+            document.getElementById('send-btn').click();
+        }
+    </script>
+</body>
+</html>
