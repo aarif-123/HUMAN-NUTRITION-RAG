@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Supabase Configuration
-SUPABASE_URL="https://yqwrstdhsuulisdosycb.supabase.co"
-SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlxd3JzdGRoc3V1bGlzZG9zeWNiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTk0NjIyMywiZXhwIjoyMDc1NTIyMjIzfQ.2UgIJEifthhyUCxfFu6LEWQQfL81RPxGEpgIizZKQFE"
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 
 # Ollama Configuration
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
