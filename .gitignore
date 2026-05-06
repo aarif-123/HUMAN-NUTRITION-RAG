@@ -39,3 +39,7 @@ Thumbs.db
 # Recovery scripts
 recover_files.py
 final_recovery.py
+
+.vercel
+
+HousePriceprediction/

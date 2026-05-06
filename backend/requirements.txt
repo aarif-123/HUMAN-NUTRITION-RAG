@@ -1,9 +1,7 @@
 fastapi
 uvicorn
-sentence-transformers
 prometheus-fastapi-instrumentator
 pydantic
-pymupdf
 python-dotenv
 supabase
-torch
+requests

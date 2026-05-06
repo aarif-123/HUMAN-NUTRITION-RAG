@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/frontend/index.html"
+    },
+    {
+      "source": "/style.css",
+      "destination": "/frontend/style.css"
+    },
+    {
+      "source": "/script.js",
+      "destination": "/frontend/script.js"
+    },
+    {
+      "source": "/rag-ollama-diagram-c5e713fbc8bc1592f586a3107587519b.png",
+      "destination": "/frontend/rag-ollama-diagram-c5e713fbc8bc1592f586a3107587519b.png"
+    }
+  ]
+}

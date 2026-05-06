@@ -4,9 +4,13 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from prometheus_fastapi_instrumentator import Instrumentator
 
-# Import modular components
-from app.services.vector_store import get_embedding, match_documents
-from app.services.llm_service import generate_response, format_rag_prompt
+# Import modular components (support both local and deployed package layouts)
+try:
+    from backend.app.services.vector_store import get_embedding, match_documents
+    from backend.app.services.llm_service import generate_response, format_rag_prompt
+except ImportError:
+    from app.services.vector_store import get_embedding, match_documents
+    from app.services.llm_service import generate_response, format_rag_prompt
 
 app = FastAPI(
     title="Nutri-RAG Modular API",

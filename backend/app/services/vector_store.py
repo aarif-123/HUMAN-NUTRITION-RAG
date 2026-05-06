@@ -1,22 +1,29 @@
 import requests
-import torch
-from sentence_transformers import SentenceTransformer
-from ..config import SUPABASE_URL, HEADERS
-
-# Initialize Device and Model
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"[STATUS] Vector Service: Initializing on {device}")
-
-# E5 models require 'query:' prefix for retrieval
-model = SentenceTransformer("intfloat/e5-base-v2", device=device)
+from ..config import EMBEDDING_MODEL, OLLAMA_URL, SUPABASE_URL, HEADERS
 
 
 def get_embedding(text: str):
-    """Generate normalized embeddings for a given text."""
-    return model.encode(f"query: {text}", normalize_embeddings=True).tolist()
+    """Generate query embeddings using Ollama (E5 model requires 'query: ' prefix)."""
+    try:
+        response = requests.post(
+            f"{OLLAMA_URL}/api/embeddings",
+            json={
+                "model": EMBEDDING_MODEL,
+                "prompt": f"query: {text}"
+            },
+            timeout=10
+        )
+        response.raise_for_status()
+        return response.json()["embedding"]
+    except Exception as e:
+        print(f"[ERROR] Ollama embedding generation failed: {str(e)}")
+        return []
 
 def match_documents(query_embedding: list, match_count: int = 5):
     """Query Supabase RPC to find matching document chunks."""
+    if not query_embedding:
+        return []
+
     rpc_url = f"{SUPABASE_URL}/rest/v1/rpc/match_documents"
     
     try:

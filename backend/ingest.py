@@ -1,6 +1,6 @@
 import os
 import fitz  # PyMuPDF
-from sentence_transformers import SentenceTransformer
+import requests
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
@@ -9,16 +9,29 @@ load_dotenv()
 # Config
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-MODEL_NAME = "intfloat/e5-base-v2"
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+MODEL_NAME = "jeffh/intfloat-e5-base-v2"
 
 # Initialize
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-model = SentenceTransformer(MODEL_NAME)
+
+def get_embedding(text: str, is_passage: bool = True):
+    prefix = "passage: " if is_passage else "query: "
+    try:
+        res = requests.post(
+            f"{OLLAMA_URL}/api/embeddings",
+            json={"model": MODEL_NAME, "prompt": f"{prefix}{text}"}
+        )
+        res.raise_for_status()
+        return res.json()["embedding"]
+    except Exception as e:
+        print(f"Embedding error: {e}")
+        return []
 
 
 def ingest_pdf(file_path):
     print(f"ðŸ“„ Ingesting {file_path}...")
-    doc = fitz.open(file_path)
+    doc = fitz.open(file_path)  
     doc_id = os.path.basename(file_path)
     
     for page_num in range(len(doc)):
@@ -32,11 +45,7 @@ def ingest_pdf(file_path):
         chunks = [text[i:i+1000] for i in range(0, len(text), 1000)]
        
         for i, chunk in enumerate(chunks):
-            # Prep for E5 model (requires 'passage: ' prefix)
-            embedding = model.encode(
-                f"passage: {chunk}",
-                normalize_embeddings=True
-            ).tolist()
+            embedding = get_embedding(chunk, is_passage=True)
            
             data = {
                 "doc_id": doc_id,

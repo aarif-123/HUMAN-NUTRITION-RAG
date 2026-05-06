@@ -4,4 +4,4 @@ global:
 scrape_configs:
   - job_name: 'nutri-rag'
     static_configs:
-      - targets: ['nutri-rag:8000']
+      - targets: ['host.docker.internal:8000']
