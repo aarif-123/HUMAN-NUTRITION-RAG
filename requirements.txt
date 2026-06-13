@@ -1,0 +1,18 @@
+# Root requirements for Vercel deployment.
+# Keep this aligned with backend/requirements.txt so the serverless function
+# installs the same runtime dependencies during builds.
+
+fastapi==0.115.0
+starlette==0.38.6
+uvicorn[standard]==0.30.6
+pydantic>=2.7,<3.0
+python-dotenv>=1.0,<2.0
+requests>=2.32,<3.0
+supabase>=2.4,<3.0
+langchain>=0.3,<0.4
+langchain-groq>=0.2,<0.3
+langchain-community>=0.3,<0.4
+langgraph>=0.2,<0.3
+prometheus-fastapi-instrumentator>=7.0,<8.0
+prometheus-client>=0.20,<1.0
+PyMuPDF>=1.24,<2.0

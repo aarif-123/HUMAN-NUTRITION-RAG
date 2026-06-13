@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+const initScript = () => {
     const chatInput = document.getElementById('chat-input');
     const sendBtn = document.getElementById('send-btn');
     const chatFeed = document.getElementById('chat-feed');
@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyList = document.getElementById('history-list');
     const themeToggle = document.getElementById('theme-toggle');
     const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebarToggleMain = document.getElementById('sidebar-toggle-main');
     const sidebar = document.getElementById('sidebar');
     const newChatBtn = document.getElementById('new-chat-btn');
     const modal = document.getElementById('source-modal');
@@ -39,7 +40,25 @@ document.addEventListener('DOMContentLoaded', () => {
             loadSession(activeSessionId);
         }
         renderSessionsList();
+        
+        // Restore sidebar state
+        const isSidebarCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+        if (isSidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+        } else {
+            sidebar.classList.remove('collapsed');
+        }
+        updateSidebarToggleVisibility();
+
         lucide.createIcons();
+    }
+
+    function updateSidebarToggleVisibility() {
+        if (!sidebar) return;
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        if (sidebarToggleMain) {
+            sidebarToggleMain.style.display = isCollapsed ? 'flex' : 'none';
+        }
     }
 
     // --- Helper: UUID Generation ---
@@ -143,9 +162,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Sidebar Toggle ---
-    sidebarToggle.addEventListener('click', () => {
+    function toggleSidebar() {
         sidebar.classList.toggle('collapsed');
-    });
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('sidebar_collapsed', isCollapsed);
+        updateSidebarToggleVisibility();
+    }
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', toggleSidebar);
+    }
+    if (sidebarToggleMain) {
+        sidebarToggleMain.addEventListener('click', toggleSidebar);
+    }
 
     // --- New Chat Button ---
     newChatBtn.addEventListener('click', createNewSession);
@@ -405,4 +434,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeModal.onclick = hideModal;
     document.querySelector('.modal-overlay').onclick = hideModal;
-});
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScript);
+} else {
+    initScript();
+}
