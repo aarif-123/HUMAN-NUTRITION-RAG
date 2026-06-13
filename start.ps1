@@ -56,10 +56,10 @@ if ($dockerRunning) {
     # Install only if needed
     if (-not (Test-Path "venv")) {
         python -m venv venv
-        .\venv\Scripts\Activate
+        & .\venv\Scripts\Activate.ps1
         pip install -r requirements.txt
     } else {
-        .\venv\Scripts\Activate
+        & .\venv\Scripts\Activate.ps1
     }
 
     Write-Host ">>> Starting backend server..." -ForegroundColor Green

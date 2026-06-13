@@ -1,45 +1,74 @@
-# Python
+# ============================================================
+# Nutri-RAG — .gitignore
+# ============================================================
+
+# --- Python ---
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+*.pyd
+
+# --- Virtual environments ---
 .Python
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+.venv/
 
-# Environment variables
+# --- Environment / secrets (NEVER commit these) ---
 .env
 .env.local
+.env.production
 .env.*
+!.env.example          # ← .env.example IS safe to commit
 
-# IDEs
+# --- Build artifacts ---
+dist/
+build/
+*.egg-info/
+.eggs/
+*.whl
+
+# --- Test & coverage output ---
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- IDE / OS ---
 .vscode/
 .idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
 
-# Node
+# --- Node (if tooling is added) ---
 node_modules/
 .next/
 out/
-build/
-dist/
 
-# Logs
+# --- Logs (runtime — never commit) ---
 *.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
-.README.md
-# OS
-.DS_Store
-Thumbs.db
+uvicorn.*.log
 
-# Recovery scripts
+# --- Vercel ---
+.vercel/
+
+# --- Docker ---
+*.tar
+
+# --- Recovery / scratch scripts ---
 recover_files.py
 final_recovery.py
 
-.vercel
-
+# --- Unrelated projects ---
 .HousePriceprediction/

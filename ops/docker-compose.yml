@@ -7,16 +7,16 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ../.env.local
+      - ../.env
     environment:
-      PROMETHEUS_MULTIPROC_DIR: /tmp-
+      PROMETHEUS_MULTIPROC_DIR: /tmp
       OLLAMA_URL: http://host.docker.internal:11434
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
       - ../backend:/app
       - ../frontend:/app/frontend
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
     restart: always
 
   prometheus:
@@ -33,6 +33,9 @@ services:
     container_name: grafana
     ports:
       - "3001:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana-rag-dashboard.json:/var/lib/grafana/dashboards/grafana-rag-dashboard.json
     depends_on:
       - prometheus
     restart: always
