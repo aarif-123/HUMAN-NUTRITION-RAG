@@ -19,52 +19,104 @@
 
 ## 📐 Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         USER BROWSER                                │
-│          index.html  │  chat.html  │  script.js  │  style.css       │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │  POST /api/chat
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                    FastAPI  (port 8000)                              │
-│   POST /api/chat │ GET /health │ GET /metrics │ GET /docs            │
-│        ↓ CORS middleware + Prometheus instrumentation                │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                    LangGraph Agent  (StateGraph)                     │
-│                                                                      │
-│   ┌─────────────────────────────────────────────────────────────┐   │
-│   │  1. classify_intent ──(NUTRITION)──▶ 2. retrieve_context    │   │
-│   │         (Groq LLM)                        │                  │   │
-│   │              │                            ▼                  │   │
-│   │    (GREETING/OFFTOPIC)           3. generate_answer          │   │
-│   │              │                     (Groq LLM)                │   │
-│   │              ▼                            │                  │   │
-│   │   3b. generate_direct_response            │                  │   │
-│   │         (Groq LLM)                        │                  │   │
-│   │              └──────────────┬─────────────┘                  │   │
-│   │                             ▼                                │   │
-│   │                  4. save_to_history (MemorySaver)            │   │
-│   └─────────────────────────────────────────────────────────────┘   │
-└────────┬──────────────────────────────────────┬─────────────────────┘
-         │                                      │
-         ▼                                      ▼
-┌─────────────────┐                  ┌──────────────────────────┐
-│  Ollama (11434)  │                  │   Supabase pgvector       │
-│  E5-base-v2     │                  │   match_documents() RPC   │
-│  768-dim embed  │                  │   Cosine similarity       │
-└─────────────────┘                  └──────────────────────────┘
-                    ┌─────────────────┐
-                    │   Groq Cloud     │
-                    │ llama-3.3-70b   │
-                    └─────────────────┘
+### System Architecture
 
-── OBSERVABILITY ──────────────────────────────────────────────────────
-  Prometheus (9090)  ←─ scrapes /metrics ──  nutri-rag:8000
-  Grafana    (3001)  ←─ reads Prometheus ──  auto-provisioned dashboard
+```mermaid
+graph TB
+    subgraph Browser["🌐 User Browser"]
+        UI1[index.html\nLanding Page]
+        UI2[chat.html\nChat UI]
+        JS[script.js\nAPI Calls + Markdown]
+        CSS[style.css\nDark / Light Theme]
+    end
+
+    subgraph FastAPI["⚡ FastAPI Backend — port 8000"]
+        CORS[CORS Middleware\nAllowed Origins from ENV]
+        PROM_MW[Prometheus Instrumentator\n/metrics endpoint]
+        HEALTH[GET /health\nHealthResponse]
+        CHAT[POST /api/chat\nChatRequest → ChatResponse]
+        DOCS[GET /docs\nSwagger UI]
+        STATIC[Static Mount /\nfrontend/ directory]
+    end
+
+    subgraph Agent["🤖 LangGraph Agent — StateGraph + MemorySaver"]
+        CI[classify_intent\nGroq llama-3.3-70b]
+        RC[retrieve_context\nOllama embed + Supabase RPC]
+        GA[generate_answer\nGroq llama-3.3-70b]
+        GDR[generate_direct_response\nGroq llama-3.3-70b]
+        SH[save_to_history\nMemorySaver per thread_id]
+    end
+
+    subgraph External["☁️ External Services"]
+        GROQ[Groq Cloud\nllama-3.3-70b-versatile\ntemp=0.2]
+        OLLAMA[Ollama — localhost:11434\njeffh/intfloat-e5-base-v2:f16\n768-dim embeddings]
+        SUPA[Supabase PostgreSQL\npgvector extension\nmatch_documents RPC\nCosine similarity]
+    end
+
+    subgraph Obs["📊 Observability — Docker Compose"]
+        PROMETHEUS[Prometheus :9090\nScrapes /metrics every 15s]
+        GRAFANA[Grafana :3001\nAuto-provisioned dashboard\nadmin / admin]
+    end
+
+    subgraph Deploy["☁️ Deployment"]
+        VERCEL[Vercel Serverless\napi/index.py\nvercel.json routing]
+        DOCKER[Docker\nMulti-stage python:3.11-slim\nnon-root appuser]
+    end
+
+    Browser -->|POST /api/chat\nsession_id + message| FastAPI
+    CHAT --> Agent
+    CI -->|NUTRITION| RC
+    CI -->|GREETING or OFFTOPIC| GDR
+    RC --> GA
+    GA --> SH
+    GDR --> SH
+    CI --> GROQ
+    GA --> GROQ
+    GDR --> GROQ
+    RC --> OLLAMA
+    RC --> SUPA
+    FastAPI --> PROMETHEUS
+    PROMETHEUS --> GRAFANA
+    FastAPI --> DOCKER
+    FastAPI --> VERCEL
+```
+
+---
+
+### 🤖 LangGraph Agent — Node Topology
+
+```mermaid
+flowchart TD
+    START(["▶ START"])
+    CI["classify_intent\n─────────────────\nGroq LLM classifies query\ninto NUTRITION / GREETING / OFFTOPIC\nLast 4 history messages for context"]
+    RC["retrieve_context\n─────────────────\nget_embedding → Ollama /api/embeddings\n'query: {text}' prefix for E5 model\nmatch_documents → Supabase RPC\ntop_k = 5 chunks"]
+    GA["generate_answer\n─────────────────\nFormats RESEARCH_BLOCKs with doc_id\nGroq LLM generates cited answer\nNo-context fallback with disclaimer"]
+    GDR["generate_direct_response\n─────────────────\nGreeting → warm intro\nOff-topic → polite redirect\nNo RAG retrieval performed"]
+    SH["save_to_history\n─────────────────\nAppends HumanMessage + AIMessage\nMemorySaver keyed on thread_id\n= session_id from request"]
+    END_NODE(["⏹ END"])
+
+    START --> CI
+    CI -->|"intent == NUTRITION"| RC
+    CI -->|"intent == GREETING\nor OFFTOPIC"| GDR
+    RC --> GA
+    GA --> SH
+    GDR --> SH
+    SH --> END_NODE
+```
+
+---
+
+### 📥 Data Ingestion Pipeline
+
+```mermaid
+flowchart LR
+    PDF["📄 PDF File\nnutrition_textbook.pdf"]
+    PYMUPDF["PyMuPDF fitz\nPage-by-page text extraction"]
+    CHUNK["chunk_text\n1000-char non-overlapping\nchunks per page"]
+    EMBED["Ollama /api/embeddings\n'passage: {text}' prefix\njeffh/intfloat-e5-base-v2:f16\n768-dim vector"]
+    INSERT["Supabase chunks table\ndoc_id, chunk_index, content\nmetadata page_number, source_file\nembedding vector 768"]
+
+    PDF --> PYMUPDF --> CHUNK --> EMBED --> INSERT
 ```
 
 ---
