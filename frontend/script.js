@@ -231,6 +231,7 @@ const initScript = () => {
             copyBtn.onclick = () => {
                 navigator.clipboard.writeText(content);
                 copyBtn.innerHTML = '<i data-lucide="check" style="color: var(--accent-primary);" size="14"></i>';
+                lucide.createIcons();
                 setTimeout(() => {
                     copyBtn.innerHTML = '<i data-lucide="copy" size="14"></i>';
                     lucide.createIcons();
@@ -407,7 +408,8 @@ const initScript = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `nutri-rag-${activeSession.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md`;
+        const safeTitle = activeSession.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '') || 'session';
+        a.download = `nutri-rag-${safeTitle}.md`;
         a.click();
         URL.revokeObjectURL(url);
     });
