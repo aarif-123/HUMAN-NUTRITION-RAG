@@ -42,7 +42,7 @@ from langchain_groq import ChatGroq
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
-from app.config import GROQ_API_KEY
+from app.config import GROQ_API_KEY, RELEVANCE_THRESHOLD
 from app.core.logging_config import logger
 from app.services.vector_store import get_embedding, match_documents
 
@@ -123,7 +123,15 @@ def retrieve_context(state: AgentState) -> dict:
     try:
         embedding = get_embedding(query)
         chunks = match_documents(embedding, match_count=5)
-        logger.info(f"Retrieved {len(chunks)} context chunks for RAG.")
+        # Filter chunks by relevance similarity threshold
+        relevant_chunks = [
+            c for c in chunks if c.get("similarity", 0.0) >= RELEVANCE_THRESHOLD
+        ]
+        logger.info(
+            f"Retrieved {len(chunks)} context chunks, "
+            f"filtered to {len(relevant_chunks)} relevant chunks (threshold >= {RELEVANCE_THRESHOLD})."
+        )
+        chunks = relevant_chunks
     except Exception as exc:
         logger.error(f"Context retrieval failed: {exc}", exc_info=True)
         chunks = []
@@ -147,19 +155,13 @@ INSTRUCTIONS:
    to answer this specific query reliably."
 """
 
-_NO_CONTEXT_DISCLAIMER = (
-    "*[No direct references found in the primary textbook database. "
-    "The following is based on general scientific consensus:]*"
-)
-
 _NO_CONTEXT_SYSTEM_PROMPT = (
-    "You are Nutri-RAG, an AI Research Assistant.\n"
-    "No direct references were found in the textbook database for this query.\n"
-    f"You MUST start your response with exactly this disclaimer:\n{_NO_CONTEXT_DISCLAIMER}\n\n"
-    "INSTRUCTIONS:\n"
-    "1. Use a professional, objective, academic tone.\n"
-    "2. Structure your answer with clear headings (###) and bullet points.\n"
-    "3. Bold key nutritional terms."
+    "You are Nutri-RAG, an AI Research Assistant specialised in human nutrition science.\n"
+    "No relevant textbook sources or references were found in the database to answer the user's query.\n"
+    "Politely inform the user that you could not find any relevant textbook sources or information "
+    "in the database to answer their specific query, and suggest they ask another question related to human nutrition.\n"
+    "Do NOT attempt to answer the query or provide information using general knowledge.\n"
+    "Maintain a professional, polite, and helpful tone."
 )
 
 
@@ -170,7 +172,7 @@ def generate_answer(state: AgentState) -> dict:
     history = state.get("history", [])
 
     if not chunks:
-        # No context retrieved — answer from general knowledge with disclaimer
+        # No context retrieved — output polite refusal instead of answering from general knowledge
         messages: List[BaseMessage] = [SystemMessage(content=_NO_CONTEXT_SYSTEM_PROMPT)]
         messages.extend(history)
         messages.append(HumanMessage(content=query))

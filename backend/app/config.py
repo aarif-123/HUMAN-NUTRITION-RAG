@@ -57,6 +57,9 @@ OLLAMA_EMBED_MODEL: str = os.getenv(
 # Embedding model used at query time — MUST match the model used during ingest
 EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", OLLAMA_EMBED_MODEL).strip()
 
+# Cosine similarity relevance threshold for vector search matches
+RELEVANCE_THRESHOLD: float = float(os.getenv("RELEVANCE_THRESHOLD", "0.70").strip())
+
 # ---------------------------------------------------------------------------
 # Startup validation — fail fast if critical secrets are absent
 # ---------------------------------------------------------------------------
