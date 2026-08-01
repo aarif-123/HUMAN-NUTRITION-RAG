@@ -4,576 +4,786 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nutri-RAG | AI Human Nutrition Research Assistant</title>
-    <meta name="description" content="Nutri-RAG is a production-grade full-stack Retrieval-Augmented Generation (RAG) system grounded in verified human nutrition textbooks, utilizing LangGraph, Ollama, and Supabase.">
-    
+    <meta name="description" content="Nutri-RAG is a production-grade full-stack RAG system grounded in verified human nutrition textbooks, using LangGraph, Groq, and Supabase pgvector.">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Icons & Styling -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="style.css">
-    
+
     <style>
-        /* Landing Page Specific Overrides & Layout */
-        body.landing-page {
-            background: radial-gradient(circle at top, #162a1c 0%, #080d09 100%) !important;
-            overflow-y: auto !important;
-            height: auto !important;
-            min-height: 100vh;
-            color: var(--text-main);
-            font-family: var(--font-inter);
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        :root {
+            --black:     #0a0a0a;
+            --gray-900:  #111111;
+            --gray-700:  #374151;
+            --gray-500:  #6b7280;
+            --gray-300:  #d1d5db;
+            --gray-100:  #f3f4f6;
+            --gray-50:   #f9fafb;
+            --white:     #ffffff;
+
+            --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--white);
+            color: var(--black);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        .landing-container {
-            max-width: 1200px;
+        /* ── Layout ── */
+        .page-wrapper {
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 2rem 1.5rem 6rem 1.5rem;
+            padding: 0 1.5rem;
         }
 
-        /* Hero Banner */
-        .hero-banner {
-            text-align: center;
-            padding: 6rem 1rem 4rem 1rem;
-            position: relative;
+        /* ── Navbar ── */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--gray-300);
         }
 
-        .hero-banner::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 300px;
-            background: var(--accent-glow);
-            filter: blur(150px);
-            opacity: 0.15;
-            z-index: 0;
-            pointer-events: none;
+        .navbar-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .hero-badge {
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--black);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+        }
+
+        .logo-text {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--black);
+        }
+
+        .nav-cta {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: var(--accent-primary);
-            padding: 6px 16px;
+            background: var(--black);
+            color: var(--white);
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .nav-cta:hover {
+            background: var(--gray-900);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* ── Hero ── */
+        .hero {
+            padding: 7rem 0 5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--gray-300);
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--gray-100);
+            border: 1px solid var(--gray-300);
+            color: var(--gray-700);
+            padding: 5px 14px;
             border-radius: 99px;
-            font-size: 0.85rem;
-            font-weight: 500;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
             margin-bottom: 2rem;
-            position: relative;
-            z-index: 1;
         }
 
         .hero-title {
-            font-family: var(--font-outfit);
-            font-size: 4rem;
+            font-family: var(--font-display);
+            font-size: clamp(2.8rem, 6vw, 4.5rem);
             font-weight: 800;
-            letter-spacing: -0.03em;
+            letter-spacing: -0.04em;
+            line-height: 1.05;
+            color: var(--black);
             margin-bottom: 1.5rem;
-            line-height: 1.1;
-            background: linear-gradient(135deg, #ffffff 50%, rgba(255, 255, 255, 0.7) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            position: relative;
-            z-index: 1;
         }
 
-        .hero-title span {
-            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .hero-title .underlined {
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero-title .underlined::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--black);
+            border-radius: 2px;
+            opacity: 0.12;
         }
 
         .hero-description {
-            font-size: 1.25rem;
-            color: var(--text-dim);
-            max-width: 700px;
-            margin: 0 auto 3rem auto;
-            position: relative;
-            z-index: 1;
+            font-size: 1.1rem;
+            color: var(--gray-500);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.75;
         }
 
-        .cta-group {
+        .hero-actions {
             display: flex;
+            align-items: center;
             justify-content: center;
             gap: 1rem;
-            position: relative;
-            z-index: 1;
+            flex-wrap: wrap;
         }
 
-        .cta-btn-primary {
+        .btn-primary {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-            color: #080d09;
+            background: var(--black);
+            color: var(--white);
             padding: 14px 28px;
-            border-radius: 12px;
-            font-family: var(--font-outfit);
-            font-size: 1.1rem;
+            border-radius: 10px;
+            font-family: var(--font-display);
+            font-size: 1rem;
             font-weight: 600;
             text-decoration: none;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             border: none;
             cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        .cta-btn-primary:hover {
+        .btn-primary:hover {
+            background: var(--gray-900);
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.5);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
         }
 
-        .cta-btn-secondary {
+        .btn-secondary {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-dim);
-            color: var(--text-main);
+            background: transparent;
+            color: var(--gray-700);
             padding: 14px 28px;
-            border-radius: 12px;
-            font-family: var(--font-outfit);
-            font-size: 1.1rem;
+            border-radius: 10px;
+            font-family: var(--font-display);
+            font-size: 1rem;
             font-weight: 600;
             text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1.5px solid var(--gray-300);
+            cursor: pointer;
+            transition: var(--transition);
         }
 
-        .cta-btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.07);
-            border-color: rgba(255, 255, 255, 0.2);
+        .btn-secondary:hover {
+            border-color: var(--gray-700);
+            color: var(--black);
             transform: translateY(-2px);
         }
 
-        /* Features Section */
-        .section-header {
+        /* ── Stack bar ── */
+        .stack-bar {
+            padding: 2.5rem 0;
+            border-bottom: 1px solid var(--gray-300);
             text-align: center;
-            margin-bottom: 4rem;
-            padding-top: 4rem;
         }
 
-        .section-tag {
-            color: var(--accent-primary);
-            font-family: var(--font-outfit);
+        .stack-label {
+            font-size: 0.73rem;
             font-weight: 600;
+            color: var(--gray-500);
             text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.15em;
-            margin-bottom: 0.5rem;
-            display: block;
+            letter-spacing: 0.12em;
+            margin-bottom: 1.1rem;
+        }
+
+        .stack-pills {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .stack-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: var(--white);
+            border: 1.5px solid var(--gray-300);
+            color: var(--gray-700);
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            font-family: var(--font-mono);
+            transition: var(--transition);
+        }
+
+        .stack-pill:hover {
+            border-color: var(--black);
+            color: var(--black);
+        }
+
+        .pill-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--black);
+            opacity: 0.35;
+            flex-shrink: 0;
+        }
+
+        /* ── Section common ── */
+        .section {
+            padding: 6rem 0;
+            border-bottom: 1px solid var(--gray-300);
+        }
+
+        .section:last-of-type { border-bottom: none; }
+
+        .section-eyebrow {
+            font-size: 0.73rem;
+            font-weight: 700;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 0.6rem;
         }
 
         .section-title {
-            font-family: var(--font-outfit);
-            font-size: 2.5rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
+            font-family: var(--font-display);
+            font-size: clamp(1.8rem, 3vw, 2.4rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--black);
+            margin-bottom: 0.75rem;
+            line-height: 1.2;
         }
 
         .section-subtitle {
-            color: var(--text-dim);
-            font-size: 1.05rem;
-            max-width: 600px;
-            margin: 0.5rem auto 0 auto;
+            font-size: 0.97rem;
+            color: var(--gray-500);
+            max-width: 540px;
+            line-height: 1.7;
         }
 
+        .section-header { margin-bottom: 3.5rem; }
+
+        /* ── Features grid ── */
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-bottom: 6rem;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 1.5px;
+            background: var(--gray-300);
+            border: 1.5px solid var(--gray-300);
+            border-radius: 16px;
+            overflow: hidden;
         }
 
         .feature-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-dim);
-            border-radius: 20px;
+            background: var(--white);
             padding: 2.5rem;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
+            transition: var(--transition);
         }
 
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(180deg, rgba(16, 185, 129, 0.03) 0%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
+        .feature-card:hover { background: var(--gray-50); }
 
-        .feature-card:hover {
-            transform: translateY(-6px);
-            border-color: rgba(16, 185, 129, 0.3);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .feature-card:hover::before {
-            opacity: 1;
-        }
-
-        .feature-icon-wrapper {
-            width: 54px;
-            height: 54px;
-            border-radius: 12px;
-            background: rgba(16, 185, 129, 0.08);
-            border: 1px solid rgba(16, 185, 129, 0.15);
+        .feature-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--gray-100);
+            border: 1.5px solid var(--gray-300);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--accent-primary);
+            color: var(--black);
             margin-bottom: 1.5rem;
-            position: relative;
-            z-index: 1;
         }
 
         .feature-card h3 {
-            font-family: var(--font-outfit);
-            font-size: 1.35rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            position: relative;
-            z-index: 1;
+            font-family: var(--font-display);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--black);
+            margin-bottom: 0.6rem;
         }
 
         .feature-card p {
-            color: var(--text-dim);
-            font-size: 0.95rem;
-            position: relative;
-            z-index: 1;
+            font-size: 0.88rem;
+            color: var(--gray-500);
+            line-height: 1.7;
         }
 
-        /* Architecture Section */
-        .arch-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border-dim);
-            border-radius: 24px;
-            padding: 3rem;
-            margin-bottom: 6rem;
-            position: relative;
+        .inline-code {
+            font-family: var(--font-mono);
+            font-size: 0.8em;
+            background: var(--gray-100);
+            border: 1px solid var(--gray-300);
+            padding: 1px 5px;
+            border-radius: 4px;
+            color: var(--gray-700);
         }
 
-        .arch-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 3rem;
-            align-items: center;
-        }
-
-        @media (min-width: 900px) {
-            .arch-grid {
-                grid-template-columns: 1.2fr 0.8fr;
-            }
-        }
-
-        .arch-image-wrapper {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border-dim);
+        /* ── Pipeline ── */
+        .pipeline {
+            border: 1.5px solid var(--gray-300);
             border-radius: 16px;
-            padding: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             overflow: hidden;
         }
 
-        .arch-image-wrapper img {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-            display: block;
-        }
-
-        .arch-steps {
+        .pipeline-step {
             display: flex;
-            flex-direction: column;
+            align-items: flex-start;
             gap: 1.5rem;
+            padding: 2rem 2.5rem;
+            background: var(--white);
+            border-bottom: 1.5px solid var(--gray-300);
+            transition: var(--transition);
         }
 
-        .arch-step-item {
-            display: flex;
-            gap: 1rem;
-        }
+        .pipeline-step:last-child { border-bottom: none; }
+        .pipeline-step:hover { background: var(--gray-50); }
 
-        .arch-step-num {
+        .step-num {
             flex-shrink: 0;
-            width: 32px;
-            height: 32px;
-            border-radius: 99px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: var(--accent-primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--black);
+            color: var(--white);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: var(--font-outfit);
+            font-family: var(--font-display);
             font-weight: 700;
             font-size: 0.9rem;
+            margin-top: 2px;
         }
 
-        .arch-step-content h4 {
-            font-family: var(--font-outfit);
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
+        .step-body h4 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--black);
+            margin-bottom: 0.35rem;
         }
 
-        .arch-step-content p {
-            color: var(--text-dim);
-            font-size: 0.9rem;
+        .step-body p {
+            font-size: 0.88rem;
+            color: var(--gray-500);
+            line-height: 1.65;
+            margin-bottom: 0.6rem;
         }
 
-        /* Tech Specifications Table */
-        .specs-table-wrapper {
-            background: var(--bg-card);
-            border: 1px solid var(--border-dim);
-            border-radius: 20px;
+        .step-tag {
+            display: inline-block;
+            background: var(--gray-100);
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            color: var(--gray-700);
+            margin: 2px 2px 0 0;
+        }
+
+        /* ── Specs table ── */
+        .specs-wrapper {
+            border: 1.5px solid var(--gray-300);
+            border-radius: 16px;
             overflow: hidden;
-            margin-bottom: 6rem;
         }
 
         .specs-table {
             width: 100%;
             border-collapse: collapse;
-            text-align: left;
+            font-size: 0.9rem;
         }
 
         .specs-table th {
-            background: rgba(255, 255, 255, 0.02);
-            border-bottom: 1px solid var(--border-dim);
-            font-family: var(--font-outfit);
-            font-weight: 600;
-            font-size: 1rem;
-            padding: 1.25rem 2rem;
-            color: var(--text-main);
+            background: var(--gray-100);
+            border-bottom: 1.5px solid var(--gray-300);
+            padding: 1rem 1.75rem;
+            text-align: left;
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .specs-table td {
-            border-bottom: 1px solid var(--border-dim);
-            padding: 1.25rem 2rem;
-            font-size: 0.95rem;
+            padding: 1.1rem 1.75rem;
+            border-bottom: 1px solid var(--gray-300);
+            vertical-align: middle;
         }
 
-        .specs-table tr:last-child td {
-            border-bottom: none;
-        }
+        .specs-table tr:last-child td { border-bottom: none; }
+        .specs-table tr:hover td { background: var(--gray-50); }
 
         .specs-label {
             font-weight: 600;
-            color: var(--text-main);
-            width: 30%;
+            color: var(--black);
+            width: 32%;
+            white-space: nowrap;
         }
 
-        .specs-value {
-            color: var(--text-dim);
-        }
+        .specs-value { color: var(--gray-700); line-height: 1.6; }
 
-        .specs-tag {
+        .tag {
             display: inline-block;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-dim);
-            border-radius: 6px;
+            background: var(--gray-100);
+            border: 1px solid var(--gray-300);
+            border-radius: 5px;
             padding: 2px 8px;
-            font-size: 0.8rem;
-            font-family: monospace;
-            color: var(--accent-secondary);
+            font-size: 0.78rem;
+            font-family: var(--font-mono);
+            color: var(--black);
+            margin: 2px 2px 2px 0;
         }
 
-        /* Footer */
-        .landing-footer {
+        /* ── Footer ── */
+        .footer {
+            padding: 2.5rem 0;
+            border-top: 1px solid var(--gray-300);
             text-align: center;
-            border-top: 1px solid var(--border-dim);
-            padding-top: 3rem;
-            margin-top: 4rem;
-            color: var(--text-dim);
-            font-size: 0.85rem;
+        }
+
+        .footer p {
+            font-size: 0.82rem;
+            color: var(--gray-500);
+            line-height: 1.7;
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero > * { animation: fadeUp 0.5s ease-out both; }
+        .hero > *:nth-child(1) { animation-delay: 0.05s; }
+        .hero > *:nth-child(2) { animation-delay: 0.1s; }
+        .hero > *:nth-child(3) { animation-delay: 0.16s; }
+        .hero > *:nth-child(4) { animation-delay: 0.22s; }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .hero { padding: 5rem 0 3.5rem; }
+            .section { padding: 4rem 0; }
+            .pipeline-step { padding: 1.5rem; gap: 1rem; }
+            .specs-table td, .specs-table th { padding: 0.85rem 1rem; }
+            .specs-label { width: auto; white-space: normal; }
+            .feature-card { padding: 1.75rem; }
         }
     </style>
 </head>
-<body class="landing-page dark-mode">
-    <div class="landing-container">
-        <!-- Header -->
-        <header class="header" style="border-radius: 16px; margin-bottom: 2rem;">
-            <div class="logo-area">
-                <i data-lucide="leaf" class="logo-icon"></i>
-                <span class="logo-text">Nutri-RAG</span>
-            </div>
-            <div class="header-actions">
-                <button id="cta-header-btn" class="cta-btn-primary" style="padding: 8px 18px; font-size: 0.95rem;" onclick="enterApp()">
-                    <span>Start Research</span>
-                    <i data-lucide="arrow-right" size="16"></i>
-                </button>
-            </div>
-        </header>
+<body>
 
-        <!-- Hero Section -->
-        <section class="hero-banner">
-            <div class="hero-badge">
-                <i data-lucide="sparkles" size="14"></i>
-                <span>Grounded AI Research Assistant</span>
+    <!-- ── NAVBAR ── -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="/" class="logo-area">
+                <div class="logo-icon">
+                    <i data-lucide="leaf" style="width:16px;height:16px;"></i>
+                </div>
+                <span class="logo-text">Nutri-RAG</span>
+            </a>
+            <button class="nav-cta" onclick="enterApp()">
+                Start Research
+                <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── HERO ── -->
+    <section class="hero">
+        <div class="page-wrapper">
+            <div class="hero-eyebrow">
+                <i data-lucide="shield-check" style="width:12px;height:12px;"></i>
+                Grounded AI &mdash; No Hallucinations
             </div>
-            <h1 class="hero-title" id="main-landing-title">🥗 Fact-Grounded Answers on <br><span>Human Nutrition</span></h1>
+            <h1 class="hero-title">
+                Fact-checked answers on<br>
+                <span class="underlined">Human Nutrition</span>
+            </h1>
             <p class="hero-description">
-                Nutri-RAG is a professional, full-stack Retrieval-Augmented Generation (RAG) system built to query medical & nutrition textbooks. No hallucinations, full source citations, and verified context proofs.
+                Nutri-RAG retrieves verified passages from medical and nutrition textbooks, validates them through a LangGraph agent pipeline, and generates precise, source-cited answers — powered by Groq and Supabase pgvector.
             </p>
-            <div class="cta-group">
-                <button id="cta-hero-start" class="cta-btn-primary" onclick="enterApp()">
-                    <span>Enter Research Assistant</span>
-                    <i data-lucide="arrow-right" size="18"></i>
+            <div class="hero-actions">
+                <button class="btn-primary" onclick="enterApp()">
+                    <i data-lucide="message-square" style="width:16px;height:16px;"></i>
+                    Open Research Assistant
                 </button>
-                <a href="#details-section" class="cta-btn-secondary">
-                    <span>Technical Details</span>
-                    <i data-lucide="info" size="18"></i>
+                <a href="#pipeline-section" class="btn-secondary">
+                    How it works
+                    <i data-lucide="arrow-down" style="width:16px;height:16px;"></i>
                 </a>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Features Section -->
-        <section id="features-section">
-            <div class="section-header">
-                <span class="section-tag">Capabilities</span>
-                <h2 class="section-title">Why Nutri-RAG?</h2>
-                <p class="section-subtitle">Specially engineered features designed to solve AI factual inaccuracies in health applications.</p>
+    <!-- ── TECH STACK PILLS ── -->
+    <div class="stack-bar">
+        <div class="page-wrapper">
+            <p class="stack-label">Powered by</p>
+            <div class="stack-pills">
+                <span class="stack-pill"><span class="pill-dot"></span>Groq LLM API</span>
+                <span class="stack-pill"><span class="pill-dot"></span>LangGraph</span>
+                <span class="stack-pill"><span class="pill-dot"></span>FastAPI</span>
+                <span class="stack-pill"><span class="pill-dot"></span>Supabase pgvector</span>
+                <span class="stack-pill"><span class="pill-dot"></span>E5-base-v2 Embeddings</span>
+                <span class="stack-pill"><span class="pill-dot"></span>Ollama (local)</span>
             </div>
+        </div>
+    </div>
 
+    <!-- ── FEATURES ── -->
+    <section class="section" id="features-section">
+        <div class="page-wrapper">
+            <div class="section-header">
+                <p class="section-eyebrow">Capabilities</p>
+                <h2 class="section-title">Built for accuracy, not speed</h2>
+                <p class="section-subtitle">Every architectural decision in Nutri-RAG prioritises verifiable, grounded answers over fast but unreliable generation.</p>
+            </div>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon-wrapper">
-                        <i data-lucide="book-open"></i>
+                    <div class="feature-icon">
+                        <i data-lucide="book-open" style="width:20px;height:20px;"></i>
                     </div>
-                    <h3>Textbook Grounding</h3>
-                    <p>Unlike generic models, Nutri-RAG limits its knowledge base to peer-reviewed textbooks, ensuring all medical references are verified.</p>
+                    <h3>Textbook-Grounded Retrieval</h3>
+                    <p>The knowledge base is limited to peer-reviewed nutrition and medical textbooks. No web scraping, no unverified sources — every answer traces back to indexed textbook chunks.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon-wrapper">
-                        <i data-lucide="git-merge"></i>
+                    <div class="feature-icon">
+                        <i data-lucide="git-branch" style="width:20px;height:20px;"></i>
                     </div>
-                    <h3>LangGraph Orchestration</h3>
-                    <p>Inputs are routed dynamically. Non-nutrition queries are answered directly or politely rejected, keeping the model highly focused.</p>
+                    <h3>LangGraph Agent Routing</h3>
+                    <p>Queries are classified before retrieval. Greetings are answered directly; off-topic queries are politely rejected; nutrition queries go through the full RAG pipeline.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon-wrapper">
-                        <i data-lucide="shield-check"></i>
+                    <div class="feature-icon">
+                        <i data-lucide="shield-check" style="width:20px;height:20px;"></i>
                     </div>
-                    <h3>Grounded Context Proof</h3>
-                    <p>Every response displays a mathematical context proof (grounded state, chunk count, and top similarity score) and citations.</p>
+                    <h3>Context Proof &amp; Citations</h3>
+                    <p>Each response includes a grounding proof — retrieved chunk count, top cosine similarity score, and clickable source pills that show the exact textbook passage used.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="zap" style="width:20px;height:20px;"></i>
+                    </div>
+                    <h3>Dual LLM Backend</h3>
+                    <p>Runs <span class="inline-code">gemma3:1b</span> locally via Ollama for development, with automatic failover to <span class="inline-code">llama-3.3-70b-versatile</span> on Groq for production-grade quality.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="database" style="width:20px;height:20px;"></i>
+                    </div>
+                    <h3>pgvector Similarity Search</h3>
+                    <p>Embeddings live in Supabase PostgreSQL via the <span class="inline-code">pgvector</span> extension. Cosine similarity retrieves the top-k most relevant textbook passages per query.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="download" style="width:20px;height:20px;"></i>
+                    </div>
+                    <h3>Session Export</h3>
+                    <p>Research sessions persist in-browser and can be exported as formatted Markdown transcripts — complete with all citations, similarity scores, and context proofs.</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Architecture Section -->
-        <section id="details-section">
+    <!-- ── PIPELINE ── -->
+    <section class="section" id="pipeline-section">
+        <div class="page-wrapper">
             <div class="section-header">
-                <span class="section-tag">System Design</span>
-                <h2 class="section-title">RAG Engine Architecture</h2>
-                <p class="section-subtitle">How queries are embedded, retrieved, validated, and synthesized end-to-end.</p>
+                <p class="section-eyebrow">System Design</p>
+                <h2 class="section-title">How a query becomes an answer</h2>
+                <p class="section-subtitle">The LangGraph pipeline routes, embeds, retrieves, and synthesises in four deterministic steps — no shortcuts, no hallucination.</p>
             </div>
-
-            <div class="arch-container">
-                <div class="arch-grid">
-                    <div class="arch-image-wrapper">
-                        <img src="rag-ollama-diagram-c5e713fbc8bc1592f586a3107587519b.png" alt="Nutri-RAG System Architecture Diagram">
+            <div class="pipeline">
+                <div class="pipeline-step">
+                    <div class="step-num">1</div>
+                    <div class="step-body">
+                        <h4>Intent Classification</h4>
+                        <p>The LangGraph agent classifies the query into <strong>NUTRITION</strong>, <strong>GREETING</strong>, or <strong>OFFTOPIC</strong>. Only nutrition queries proceed to retrieval — others are handled or politely rejected immediately, keeping the system focused.</p>
+                        <span class="step-tag">LangGraph</span>
+                        <span class="step-tag">llama-3.3-70b / gemma3:1b</span>
                     </div>
-                    <div class="arch-steps">
-                        <div class="arch-step-item">
-                            <div class="arch-step-num">1</div>
-                            <div class="arch-step-content">
-                                <h4>Query Embedding</h4>
-                                <p>User queries are vectorized locally using the high-performance E5 embeddings model.</p>
-                            </div>
-                        </div>
-                        <div class="arch-step-item">
-                            <div class="arch-step-num">2</div>
-                            <div class="arch-step-content">
-                                <h4>Vector Search (pgvector)</h4>
-                                <p>Supabase queries the indexed textbook vector space via cosine similarity to fetch the most relevant passages.</p>
-                            </div>
-                        </div>
-                        <div class="arch-step-item">
-                            <div class="arch-step-num">3</div>
-                            <div class="arch-step-content">
-                                <h4>Agent Validation & Synthesis</h4>
-                                <p>LangGraph orchestrates the validation. Answers are generated by matching the context blocks, generating precise citations.</p>
-                            </div>
-                        </div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-num">2</div>
+                    <div class="step-body">
+                        <h4>Query Embedding</h4>
+                        <p>The query text is vectorised locally using <strong>E5-base-v2</strong> (768 dimensions, f16 precision via Ollama). The resulting embedding is L2-normalised for cosine similarity comparison against the indexed chunks.</p>
+                        <span class="step-tag">jeffh/intfloat-e5-base-v2:f16</span>
+                        <span class="step-tag">768 dims</span>
+                        <span class="step-tag">Ollama</span>
+                    </div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-num">3</div>
+                    <div class="step-body">
+                        <h4>Vector Retrieval (pgvector)</h4>
+                        <p>The embedding is matched against the textbook chunk store in Supabase PostgreSQL via cosine similarity. Top-k relevant passages and their scores are returned. If no chunks pass the similarity threshold, a fallback message is returned — no hallucination allowed.</p>
+                        <span class="step-tag">Supabase</span>
+                        <span class="step-tag">pgvector</span>
+                        <span class="step-tag">cosine similarity</span>
+                    </div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-num">4</div>
+                    <div class="step-body">
+                        <h4>Grounded Answer Synthesis</h4>
+                        <p>Retrieved chunks are injected into a structured prompt. The LLM generates a response strictly from the provided context, annotated with a context proof (chunk count, top similarity score) and clickable source citations.</p>
+                        <span class="step-tag">FastAPI</span>
+                        <span class="step-tag">Groq API</span>
+                        <span class="step-tag">context proof</span>
+                        <span class="step-tag">Prometheus metrics</span>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Technical Specifications -->
-        <section>
+    <!-- ── SPECIFICATIONS ── -->
+    <section class="section" id="specs-section">
+        <div class="page-wrapper">
             <div class="section-header">
-                <span class="section-tag">Specifications</span>
-                <h2 class="section-title">Technical Specifications</h2>
-                <p class="section-subtitle">Detailed model architecture and technologies powering the chatbot stack.</p>
+                <p class="section-eyebrow">Specifications</p>
+                <h2 class="section-title">Technical stack</h2>
+                <p class="section-subtitle">Exact model names, versions, and technologies used in the current deployment.</p>
             </div>
-
-            <div class="specs-table-wrapper">
+            <div class="specs-wrapper">
                 <table class="specs-table">
                     <thead>
                         <tr>
-                            <th>Parameter</th>
-                            <th>Description / Model Specifications</th>
+                            <th>Component</th>
+                            <th>Technology / Model</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="specs-label">Large Language Model (LLM)</td>
+                            <td class="specs-label">LLM (Primary)</td>
                             <td class="specs-value">
-                                <span class="specs-tag">gemma3:1b</span> (Ollama Local Runtime) / 
-                                <span class="specs-tag">llama-3.3-70b-versatile</span> (Groq API fallback)
+                                <span class="tag">llama-3.3-70b-versatile</span> via Groq Cloud API
                             </td>
                         </tr>
                         <tr>
-                            <td class="specs-label">Text Embedding Model</td>
+                            <td class="specs-label">LLM (Local / Fallback)</td>
                             <td class="specs-value">
-                                <span class="specs-tag">jeffh/intfloat-e5-base-v2:f16</span> (768 dimensions, normalized)
+                                <span class="tag">gemma3:1b</span> via Ollama local runtime
                             </td>
                         </tr>
                         <tr>
-                            <td class="specs-label">Vector Database</td>
+                            <td class="specs-label">Text Embedding</td>
                             <td class="specs-value">
-                                Supabase PostgreSQL with <span class="specs-tag">pgvector</span> extension (Cosine similarity search)
+                                <span class="tag">jeffh/intfloat-e5-base-v2:f16</span> — 768 dimensions, L2-normalised, via Ollama
                             </td>
                         </tr>
                         <tr>
-                            <td class="specs-label">Orchestration & State Management</td>
+                            <td class="specs-label">Vector Store</td>
                             <td class="specs-value">
-                                <span class="specs-tag">LangGraph</span> multi-step agent flow (Classification -> Retrieval -> Generation)
+                                Supabase PostgreSQL + <span class="tag">pgvector</span> extension — cosine similarity search
                             </td>
                         </tr>
                         <tr>
-                            <td class="specs-label">API Framework & Observability</td>
+                            <td class="specs-label">Agent Orchestration</td>
                             <td class="specs-value">
-                                FastAPI (Python 3.10) integrated with Prometheus fastapi-instrumentator & Grafana dashboard
+                                <span class="tag">LangGraph</span> — Classification &rarr; Embedding &rarr; Retrieval &rarr; Generation
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="specs-label">API Backend</td>
+                            <td class="specs-value">
+                                <span class="tag">FastAPI</span> (Python 3.10) with Prometheus <span class="tag">fastapi-instrumentator</span> + Grafana dashboard
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="specs-label">Deployment</td>
+                            <td class="specs-value">
+                                Vercel (frontend routing) + <span class="tag">vercel.json</span> API rewrites &middot; Docker-ready backend
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Footer -->
-        <footer class="landing-footer">
-            <p>© 2026 Nutri-RAG. Built for academic research and verified scientific inquiries.</p>
-        </footer>
-    </div>
+    <!-- ── FOOTER ── -->
+    <footer class="footer">
+        <div class="page-wrapper">
+            <p>
+                &copy; 2026 Nutri-RAG &mdash; Built for academic research and verified scientific inquiry.<br>
+                Always consult a qualified medical professional for clinical decisions.
+            </p>
+        </div>
+    </footer>
 
     <script>
         lucide.createIcons();
+
         function enterApp() {
             window.location.href = '/chat';
         }

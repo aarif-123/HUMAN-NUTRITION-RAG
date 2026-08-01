@@ -22,13 +22,8 @@ const initScript = () => {
     initApp();
 
     function initApp() {
-        // Load theme
-        if (localStorage.getItem('theme') === 'light') {
-            document.body.classList.remove('dark-mode');
-            themeToggle.innerHTML = '<i data-lucide="moon"></i>';
-        } else {
-            themeToggle.innerHTML = '<i data-lucide="sun"></i>';
-        }
+        // Theme toggle shows moon icon (dark mode not yet implemented)
+        themeToggle.innerHTML = '<i data-lucide="moon"></i>';
 
         // Setup active session
         if (sessions.length === 0) {
@@ -152,12 +147,9 @@ const initScript = () => {
         initApp();
     }
 
-    // --- Theme Management ---
+    // --- Theme toggle (no-op — light mode only) ---
     themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        themeToggle.innerHTML = isDark ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
+        // Dark mode not implemented in current theme — no action
         lucide.createIcons();
     });
 

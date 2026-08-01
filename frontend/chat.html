@@ -15,7 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="dark-mode">
+<body>
     <div class="app-wrapper">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
@@ -40,7 +40,7 @@
                 <button class="action-btn" id="theme-toggle" title="Toggle Theme">
                     <i data-lucide="sun"></i>
                 </button>
-                <div style="font-size: 0.75rem; color: var(--text-dim);">v3.0 (Groq + LangGraph)</div>
+                <div style="font-size: 0.7rem; color: var(--text-dim);">v4.1 · Groq + LangGraph</div>
             </div>
         </aside>
 
@@ -51,7 +51,9 @@
                     <button class="action-btn" id="sidebar-toggle-main" title="Expand Sidebar" style="display: none; margin-right: 0.75rem;">
                         <i data-lucide="panel-left"></i>
                     </button>
-                    <i data-lucide="leaf" class="logo-icon"></i>
+                    <div class="logo-icon">
+                        <i data-lucide="leaf" style="width:14px;height:14px;"></i>
+                    </div>
                     <span class="logo-text">Nutri-RAG</span>
                 </div>
                 <div class="header-actions">
