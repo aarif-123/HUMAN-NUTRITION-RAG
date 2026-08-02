@@ -55,8 +55,8 @@ HF_API_TOKEN: str = os.getenv("HF_API_TOKEN", "").strip()
 # intfloat/e5-base-v2 produces 768-dim vectors identical to the local Ollama E5 model.
 HF_EMBED_MODEL: str = os.getenv("HF_EMBED_MODEL", "intfloat/e5-base-v2").strip()
 
-# HuggingFace Inference API base URL
-HF_INFERENCE_URL: str = "https://api-inference.huggingface.co/pipeline/feature-extraction"
+# HuggingFace Inference API base URL (updated to the new router.huggingface.co domain)
+HF_INFERENCE_URL: str = "https://router.huggingface.co/hf-inference/models"
 
 # ---------------------------------------------------------------------------
 # Ollama (local runtime — kept for local dev / fallback reference only)

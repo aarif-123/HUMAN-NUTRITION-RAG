@@ -87,7 +87,7 @@ def get_embedding(text: str) -> list[float]:
     # 1. Attempt HuggingFace Inference API
     try:
         response = requests.post(
-            url=f"{HF_INFERENCE_URL}/{HF_EMBED_MODEL}",
+            url=f"{HF_INFERENCE_URL}/{HF_EMBED_MODEL}/pipeline/feature-extraction",
             headers=_HF_HEADERS,
             json={"inputs": prefixed},
             timeout=_HF_TIMEOUT,

@@ -52,7 +52,8 @@ SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 HF_API_TOKEN: str = os.getenv("HF_API_TOKEN", "")
 HF_EMBED_MODEL: str = os.getenv("HF_EMBED_MODEL", "intfloat/e5-base-v2")
-HF_INFERENCE_URL: str = "https://api-inference.huggingface.co/pipeline/feature-extraction"
+# HuggingFace Inference API base URL (updated to the new router.huggingface.co domain)
+HF_INFERENCE_URL: str = "https://router.huggingface.co/hf-inference/models"
 CHUNK_SIZE: int = 1000  # characters per chunk
 EMBED_TIMEOUT: int = 45  # seconds — HF cold-start can take ~20 s
 
@@ -106,7 +107,7 @@ def get_passage_embedding(text: str) -> Optional[list[float]]:
         return None
     try:
         res = requests.post(
-            f"{HF_INFERENCE_URL}/{HF_EMBED_MODEL}",
+            f"{HF_INFERENCE_URL}/{HF_EMBED_MODEL}/pipeline/feature-extraction",
             headers=_HF_HEADERS,
             json={"inputs": f"passage: {text}"},
             timeout=EMBED_TIMEOUT,
