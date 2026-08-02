@@ -11,13 +11,14 @@ Required variables
 SUPABASE_URL              – Supabase project REST endpoint
 SUPABASE_SERVICE_ROLE_KEY – Service-role secret (server-side only)
 GROQ_API_KEY              – Groq Cloud API key
+HF_API_TOKEN              – HuggingFace Inference API token (for embeddings)
 
 Optional variables (sensible defaults provided)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-OLLAMA_URL         – Ollama API base URL          (default: http://localhost:11434)
-OLLAMA_MODEL       – Ollama generation model      (default: gemma3:1b)
-OLLAMA_EMBED_MODEL – Ollama embedding model       (default: jeffh/intfloat-e5-base-v2:f16)
-EMBEDDING_MODEL    – Embedding model for queries  (default: same as OLLAMA_EMBED_MODEL)
+HF_EMBED_MODEL     – HuggingFace model for embeddings  (default: intfloat/e5-base-v2)
+OLLAMA_URL         – Ollama API base URL (unused on Vercel, kept for local dev)
+OLLAMA_MODEL       – Ollama generation model (unused on Vercel)
+RELEVANCE_THRESHOLD – Minimum cosine similarity to keep a chunk (default: 0.70)
 """
 
 import os
@@ -46,19 +47,25 @@ HEADERS: dict = {
 GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "").strip()
 
 # ---------------------------------------------------------------------------
-# Ollama (local runtime — used for embeddings)
+# HuggingFace Inference API (used for embeddings — works on Vercel)
+# ---------------------------------------------------------------------------
+HF_API_TOKEN: str = os.getenv("HF_API_TOKEN", "").strip()
+
+# Model must match the one used during ingest (same architecture = same vector space).
+# intfloat/e5-base-v2 produces 768-dim vectors identical to the local Ollama E5 model.
+HF_EMBED_MODEL: str = os.getenv("HF_EMBED_MODEL", "intfloat/e5-base-v2").strip()
+
+# HuggingFace Inference API base URL
+HF_INFERENCE_URL: str = "https://api-inference.huggingface.co/pipeline/feature-extraction"
+
+# ---------------------------------------------------------------------------
+# Ollama (local runtime — kept for local dev / fallback reference only)
 # ---------------------------------------------------------------------------
 OLLAMA_URL: str = os.getenv("OLLAMA_URL", "http://localhost:11434").strip()
 OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "gemma3:1b").strip()
-OLLAMA_EMBED_MODEL: str = os.getenv(
-    "OLLAMA_EMBED_MODEL", "jeffh/intfloat-e5-base-v2:f16"
-).strip()
-
-# Embedding model used at query time — MUST match the model used during ingest
-EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", OLLAMA_EMBED_MODEL).strip()
 
 # Cosine similarity relevance threshold for vector search matches
-RELEVANCE_THRESHOLD: float = float(os.getenv("RELEVANCE_THRESHOLD", "0.70").strip())
+RELEVANCE_THRESHOLD: float = float(os.getenv("RELEVANCE_THRESHOLD", "0.20").strip())
 
 # ---------------------------------------------------------------------------
 # Startup validation — fail fast if critical secrets are absent
@@ -67,6 +74,7 @@ _REQUIRED: dict[str, str] = {
     "SUPABASE_URL": SUPABASE_URL,
     "SUPABASE_SERVICE_ROLE_KEY": SUPABASE_KEY,
     "GROQ_API_KEY": GROQ_API_KEY,
+    "HF_API_TOKEN": HF_API_TOKEN,
 }
 
 _missing = [name for name, value in _REQUIRED.items() if not value]
@@ -82,5 +90,5 @@ if _missing:
 
 logger.info(
     "Environment configuration validated successfully. "
-    f"Embedding model: {EMBEDDING_MODEL} | Ollama: {OLLAMA_URL}"
+    f"Embedding model: {HF_EMBED_MODEL} (HuggingFace) | Ollama: {OLLAMA_URL}"
 )

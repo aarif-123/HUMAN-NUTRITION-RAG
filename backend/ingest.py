@@ -8,7 +8,8 @@ What it does
 1. Opens a PDF file using PyMuPDF (fitz).
 2. Extracts text page-by-page.
 3. Splits each page into ~1000-character chunks.
-4. Generates a passage embedding for each chunk using Ollama (E5 model).
+4. Generates a passage embedding for each chunk via the HuggingFace
+   Inference API (model: intfloat/e5-base-v2, 768 dims).
 5. Inserts each chunk (content + embedding + metadata) into the Supabase
    ``chunks`` table.
 
@@ -22,8 +23,7 @@ Usage
 
 Prerequisites
 ~~~~~~~~~~~~~
-- Ollama must be running locally with the embedding model pulled:
-      ollama pull jeffh/intfloat-e5-base-v2
+- HF_API_TOKEN must be set in .env (get one at https://huggingface.co/settings/tokens).
 - Supabase ``chunks`` table must exist with pgvector enabled.
   See the Supabase setup instructions in SETUP.md.
 """
@@ -31,6 +31,7 @@ Prerequisites
 from __future__ import annotations
 
 import argparse
+import math
 import os
 import sys
 import time
@@ -49,16 +50,35 @@ load_dotenv(override=True)
 
 SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
-OLLAMA_URL: str = os.getenv("OLLAMA_URL", "http://localhost:11434")
-EMBEDDING_MODEL: str = os.getenv(
-    "OLLAMA_EMBED_MODEL", "jeffh/intfloat-e5-base-v2:f16"
-)
+HF_API_TOKEN: str = os.getenv("HF_API_TOKEN", "")
+HF_EMBED_MODEL: str = os.getenv("HF_EMBED_MODEL", "intfloat/e5-base-v2")
+HF_INFERENCE_URL: str = "https://api-inference.huggingface.co/pipeline/feature-extraction"
 CHUNK_SIZE: int = 1000  # characters per chunk
-EMBED_TIMEOUT: int = 60  # seconds
+EMBED_TIMEOUT: int = 45  # seconds — HF cold-start can take ~20 s
+
+_HF_HEADERS: dict[str, str] = {
+    "Authorization": f"Bearer {HF_API_TOKEN}",
+    "Content-Type": "application/json",
+}
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _l2_normalize(vector: list[float]) -> list[float]:
+    """
+    Return the L2-normalised (unit-length) version of *vector*.
+
+    Both stored passage embeddings (here) and query embeddings (vector_store.py)
+    must be normalised so that pgvector's cosine distance operator produces
+    scores in [0, 1] that are directly comparable across the two sets.
+    """
+    magnitude = math.sqrt(sum(x * x for x in vector))
+    if magnitude == 0.0:
+        print("  ⚠  Zero-vector encountered during normalisation — storing as-is.")
+        return vector
+    return [x / magnitude for x in vector]
 
 
 def _get_supabase_client() -> Client:
@@ -71,23 +91,42 @@ def _get_supabase_client() -> Client:
 
 def get_passage_embedding(text: str) -> Optional[list[float]]:
     """
-    Generate a passage embedding via Ollama.
+    Generate a passage embedding via the HuggingFace Inference API.
 
     Uses the ``"passage: "`` prefix required by the E5 model family for
-    documents being ingested (queries use ``"query: "``).
+    documents being ingested (query-time uses ``"query: "``).
+
+    The HF feature-extraction endpoint returns ``[[float, ...]]`` for a
+    single string input — we unwrap the outer list.
 
     Returns ``None`` on failure so the caller can decide whether to skip or retry.
     """
+    if not HF_API_TOKEN:
+        print("  ⚠  HF_API_TOKEN is not set — cannot generate embeddings.")
+        return None
     try:
         res = requests.post(
-            f"{OLLAMA_URL}/api/embeddings",
-            json={"model": EMBEDDING_MODEL, "prompt": f"passage: {text}"},
+            f"{HF_INFERENCE_URL}/{HF_EMBED_MODEL}",
+            headers=_HF_HEADERS,
+            json={"inputs": f"passage: {text}"},
             timeout=EMBED_TIMEOUT,
         )
         res.raise_for_status()
-        return res.json()["embedding"]
+        payload = res.json()
+        # Unwrap nested list returned by HF feature-extraction pipeline
+        if isinstance(payload, list) and payload and isinstance(payload[0], list):
+            embedding: list[float] = payload[0]
+        elif isinstance(payload, list) and payload and isinstance(payload[0], float):
+            embedding = payload
+        else:
+            print(f"  ⚠  Unexpected HF response shape: {type(payload)}")
+            return None
+        return _l2_normalize(embedding)
     except requests.exceptions.Timeout:
-        print(f"  ⚠  Ollama timed out after {EMBED_TIMEOUT}s — skipping chunk.")
+        print(f"  ⚠  HuggingFace timed out after {EMBED_TIMEOUT}s — skipping chunk.")
+        return None
+    except requests.exceptions.HTTPError as exc:
+        print(f"  ⚠  HuggingFace HTTP {exc.response.status_code}: {exc.response.text}")
         return None
     except Exception as exc:
         print(f"  ⚠  Embedding error: {exc}")

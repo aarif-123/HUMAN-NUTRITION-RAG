@@ -27,7 +27,7 @@ from fastapi.staticfiles import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.routes.chat import router as chat_router
-from app.core.logging_config import logger, setup_logging
+from app.core.logging_config import RequestLoggingMiddleware, logger, setup_logging
 
 # ---------------------------------------------------------------------------
 # Frontend directory — always two levels up from this file:
@@ -62,6 +62,9 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
         openapi_url="/openapi.json",
     )
+
+    # Custom correlation ID and request-response logging middleware (outermost layer)
+    app.add_middleware(RequestLoggingMiddleware)
 
     # ------------------------------------------------------------------
     # CORS — restrict in production by setting ALLOWED_ORIGINS env var
