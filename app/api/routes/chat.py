@@ -60,9 +60,6 @@ async def chat(req: ChatRequest) -> ChatResponse:
         config = {"configurable": {"thread_id": req.session_id}}
         inputs: dict = {
             "query": req.message,
-            "history": [],
-            "chunks": [],
-            "response": "",
         }
 
         output = query_agent.invoke(inputs, config=config)
