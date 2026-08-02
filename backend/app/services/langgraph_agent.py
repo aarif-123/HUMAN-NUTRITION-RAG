@@ -77,20 +77,18 @@ class AgentState(TypedDict):
 # ---------------------------------------------------------------------------
 
 _INTENT_SYSTEM_PROMPT = (
-    "You are an intent classification routing engine for a RAG chatbot. "
-    "Classify the user query into exactly ONE of three categories:\n"
-    "1. 'NUTRITION' — if the query is about nutrition, vitamins, diet, biology, "
-    "health research, metabolism, food composition, OR is a follow-up to a previous "
-    "nutrition topic in the conversation history.\n"
-    "2. 'GREETING' — if the query is a friendly greeting or introduction "
-    "(e.g. 'hi', 'hello', 'who are you?').\n"
-    "3. 'OFFTOPIC' — if the query is unrelated to nutrition, biology, or greetings.\n\n"
-    "Respond with ONLY one word: NUTRITION, GREETING, or OFFTOPIC."
+    "You are an intent classification routing engine for a human nutrition RAG assistant. "
+    "Classify the user query into exactly ONE of two categories:\n"
+    "1. 'DIRECT_CHAT' — if the user is saying hello, greeting you, chit-chatting, asking conversational "
+    "questions, or asking general things that do NOT require looking up specific scientific textbook facts.\n"
+    "2. 'RETRIEVAL_QUERY' — if the user is asking for specific scientific/nutritional facts, detailed values, "
+    "biological pathways, research findings, or follow-ups that require searching the database for accurate information.\n\n"
+    "Respond with ONLY one word: DIRECT_CHAT or RETRIEVAL_QUERY."
 )
 
 
 def classify_intent(state: AgentState) -> dict:
-    """Classify the user query into NUTRITION, GREETING, or OFFTOPIC."""
+    """Classify the user query into DIRECT_CHAT or RETRIEVAL_QUERY."""
     query = state["query"]
     history = state.get("history", [])
 
@@ -103,32 +101,67 @@ def classify_intent(state: AgentState) -> dict:
     try:
         result = llm.invoke(messages)
         raw_intent = result.content.strip().upper()
-        if "NUTRITION" in raw_intent:
-            intent = "NUTRITION"
-        elif "GREETING" in raw_intent:
-            intent = "GREETING"
+        if "RETRIEVAL" in raw_intent:
+            intent = "RETRIEVAL_QUERY"
         else:
-            intent = "OFFTOPIC"
+            intent = "DIRECT_CHAT"
     except Exception as exc:
         logger.error(f"Intent classification failed: {exc}", exc_info=True)
-        intent = "NUTRITION"  # safe fallback — still attempts retrieval
+        intent = "RETRIEVAL_QUERY"  # safe fallback — still attempts retrieval
 
     logger.info(f"Intent classified as: {intent}")
     return {"intent": intent}
 
 
+_QUERY_GEN_SYSTEM_PROMPT = (
+    "You are a search query reformulation engine for a RAG system on human nutrition. "
+    "Based on the user's latest query and the conversation history, generate a standalone, "
+    "concise search query optimized for vector-similarity retrieval in a textbook database. "
+    "Do NOT include any introductions, explanations, quotes, or markdown formatting. "
+    "Provide ONLY the plain text search query. If the user's query is already standalone, "
+    "return it exactly as is."
+)
+
+
+def _generate_search_query(query: str, history: List[BaseMessage]) -> str:
+    """Generate an optimized standalone search query based on conversation history."""
+    if not history:
+        return query
+
+    messages: List[BaseMessage] = [
+        SystemMessage(content=_QUERY_GEN_SYSTEM_PROMPT),
+        *history[-4:],  # Include last 2 turns for context
+        HumanMessage(content=f"Generate standalone search query for: '{query}'")
+    ]
+    try:
+        result = llm.invoke(messages)
+        optimized = result.content.strip()
+        # Clean up quotes if LLM returned them
+        if (optimized.startswith('"') and optimized.endswith('"')) or (optimized.startswith("'") and optimized.endswith("'")):
+            optimized = optimized[1:-1].strip()
+        logger.info(f"Optimized search query generated: '{optimized}' | Original: '{query}'")
+        return optimized
+    except Exception as exc:
+        logger.error(f"Search query generation failed: {exc}", exc_info=True)
+        return query
+
+
 def retrieve_context(state: AgentState) -> dict:
     """Embed the query and retrieve relevant document chunks from Supabase."""
     query = state["query"]
+    history = state.get("history", [])
     try:
-        embedding = get_embedding(query)
+        # Generate an optimized query resolving any context pronouns (e.g. "how is it absorbed?")
+        search_query = _generate_search_query(query, history)
+        
+        embedding = get_embedding(search_query)
         chunks = match_documents(embedding, match_count=5)
         # Filter chunks by relevance similarity threshold
         relevant_chunks = [
             c for c in chunks if c.get("similarity", 0.0) >= RELEVANCE_THRESHOLD
         ]
         logger.info(
-            f"Retrieved {len(chunks)} context chunks, "
+            f"Retrieved {len(chunks)} context chunks for '{search_query}', "
             f"filtered to {len(relevant_chunks)} relevant chunks (threshold >= {RELEVANCE_THRESHOLD})."
         )
         chunks = relevant_chunks
@@ -199,25 +232,18 @@ def generate_answer(state: AgentState) -> dict:
 
 
 def generate_direct_response(state: AgentState) -> dict:
-    """Handle greetings and off-topic queries without RAG retrieval."""
+    """Handle general conversational chat directly with the model (no RAG needed)."""
     query = state["query"]
     history = state.get("history", [])
-    intent = state["intent"]
 
-    if intent == "GREETING":
-        system_prompt = (
-            "You are Nutri-RAG, a friendly AI Research Assistant specialised in human "
-            "nutrition science. Greet the user warmly, briefly explain what you can do "
-            "(answer questions grounded in nutrition textbooks), and invite them to ask "
-            "their first question."
-        )
-    else:
-        system_prompt = (
-            "You are Nutri-RAG, an AI Research Assistant specialised in human nutrition. "
-            "Politely inform the user that their query is outside your area of expertise "
-            "(human nutrition and health science), and guide them back to nutrition topics. "
-            "Do not attempt to answer unrelated questions."
-        )
+    system_prompt = (
+        "You are Nutri-RAG, a friendly and professional AI Research Assistant specialised in human "
+        "nutrition science. You are engaged in a general conversational chat with the user. "
+        "Answer their query directly and conversationally using your general knowledge. "
+        "If the user greets you, greet them back warmly and explain what you do. "
+        "If the user asks something completely unrelated to health, nutrition, or biology, "
+        "politely guide them back to human nutrition topics."
+    )
 
     messages: List[BaseMessage] = [SystemMessage(content=system_prompt)]
     messages.extend(history)
@@ -251,7 +277,7 @@ def save_to_history(state: AgentState) -> dict:
 
 def _route_intent(state: AgentState) -> str:
     """Return the next node name based on the classified intent."""
-    return "retrieve_context" if state["intent"] == "NUTRITION" else "generate_direct_response"
+    return "retrieve_context" if state["intent"] == "RETRIEVAL_QUERY" else "generate_direct_response"
 
 
 # ---------------------------------------------------------------------------
