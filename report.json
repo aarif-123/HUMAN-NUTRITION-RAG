@@ -1,0 +1,396 @@
+{
+  "total_samples": 5,
+  "passed_samples": 5,
+  "failed_samples": 0,
+  "pass_rate_percentage": 100.0,
+  "mean_overall_score": 0.9883,
+  "mean_faithfulness": 0.9,
+  "mean_context_relevance": 0.578,
+  "mean_answer_relevance": 0.774,
+  "mean_citation_accuracy": 0.9962,
+  "results": [
+    {
+      "sample_id": "NUTRITION_001_VITAMIN_C_COLLAGEN",
+      "query": "What is the role of Vitamin C in collagen synthesis?",
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "threshold": 0.85,
+        "passed": true,
+        "reasoning": "All extracted claims are explicitly supported by the provided research context.",
+        "details": {
+          "total_claims": 10,
+          "supported_claims": 10
+        }
+      },
+      "context_relevance": {
+        "name": "context_relevance",
+        "score": 0.96,
+        "threshold": 0.7,
+        "passed": true,
+        "reasoning": "Both retrieved chunks directly explain Vitamin C's role as a cofactor for prolyl and lysyl hydroxylases in collagen synthesis and describe the consequences of its deficiency, providing essential and focused information to answer the query.",
+        "details": {
+          "chunk_count": 2
+        }
+      },
+      "answer_relevance": {
+        "name": "answer_relevance",
+        "score": 0.95,
+        "threshold": 0.8,
+        "passed": true,
+        "reasoning": "The response directly addresses the query by explaining Vitamin C's role as a cofactor for prolyl and lysyl hydroxylases, its importance for hydroxylation and triple-helix stability in collagen, and mentions the consequence of deficiency (scurvy). It is concise and stays on topic without unnecessary information.",
+        "details": {}
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 0.9812,
+        "threshold": 0.8,
+        "passed": true,
+        "reasoning": "Valid citations across 3/4 statements. Bounds validity: 100%, Content overlap: 64%.",
+        "details": {
+          "total_citations": 3,
+          "valid_citations": 3,
+          "out_of_bounds_citations": [],
+          "sentence_count": 4,
+          "cited_sentence_count": 3,
+          "bounds_precision": 1.0,
+          "citation_coverage": 0.75,
+          "mean_lexical_overlap": 0.6442
+        }
+      },
+      "refusal_adherence": null,
+      "overall_score": 0.9757,
+      "passed": true,
+      "claim_verifications": [
+        {
+          "claim": "Vitamin C (ascorbic acid) plays a fundamental biochemical role in collagen synthesis.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "Ascorbic acid (Vitamin C) acts as an essential electron donor and cofactor for prolyl hydroxylase and lysyl hydroxylase... This hydroxylation is critical for the formation of stable collagen triple-helix structures.",
+          "reasoning": "The context explicitly links vitamin C to the enzymatic steps required for collagen synthesis."
+        },
+        {
+          "claim": "Vitamin C acts as an essential electron donor and cofactor for prolyl hydroxylase.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "Ascorbic acid (Vitamin C) acts as an essential electron donor and cofactor for prolyl hydroxylase...",
+          "reasoning": "Direct statement in Research Block 1."
+        },
+        {
+          "claim": "Vitamin C acts as an essential electron donor and cofactor for lysyl hydroxylase.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "Ascorbic acid (Vitamin C) acts as an essential electron donor and cofactor for ... lysyl hydroxylase.",
+          "reasoning": "Direct statement in Research Block 1."
+        },
+        {
+          "claim": "Prolyl hydroxylase post\u2011translationally hydroxylates proline residues within procollagen peptide chains.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "These enzymes post\u2011translationally hydroxylate proline and lysine residues within procollagen peptide chains.",
+          "reasoning": "Explicitly described in Research Block 1."
+        },
+        {
+          "claim": "Lysyl hydroxylase post\u2011translationally hydroxylates lysine residues within procollagen peptide chains.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "These enzymes post\u2011translationally hydroxylate proline and lysine residues within procollagen peptide chains.",
+          "reasoning": "Explicitly described in Research Block 1."
+        },
+        {
+          "claim": "Hydroxylation of proline and lysine residues is necessary for proper folding and cross\u2011linking of the collagen triple helix.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "This hydroxylation is critical for the formation of stable collagen triple\u2011helix structures and intermolecular cross\u2011linking.",
+          "reasoning": "Directly stated in Research Block 1."
+        },
+        {
+          "claim": "Inadequate Vitamin C intake impairs connective tissue (collagen) synthesis.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "A deficiency in ascorbic acid impairs collagen synthesis, leading to clinical scurvy.",
+          "reasoning": "Context links vitamin C deficiency to impaired collagen synthesis, which is the main component of connective tissue."
+        },
+        {
+          "claim": "Inadequate Vitamin C intake results in scurvy.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "A deficiency in ascorbic acid ... leading to clinical scurvy.",
+          "reasoning": "Explicitly stated in Research Block 2."
+        },
+        {
+          "claim": "Scurvy is characterized by capillary fragility.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "Symptoms include capillary fragility, petechial hemorrhages, ... due to defective connective tissue maintenance.",
+          "reasoning": "Directly listed among scurvy symptoms in Research Block 2."
+        },
+        {
+          "claim": "Scurvy is characterized by poor wound healing.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "Symptoms include ... impaired wound healing ... due to defective connective tissue maintenance.",
+          "reasoning": "Directly listed among scurvy symptoms in Research Block 2."
+        }
+      ],
+      "execution_time_seconds": 27.775
+    },
+    {
+      "sample_id": "NUTRITION_002_VITAMIN_D_CALCIUM",
+      "query": "How does active Vitamin D regulate calcium absorption in the intestine?",
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "threshold": 0.85,
+        "passed": true,
+        "reasoning": "All four extracted claims are explicitly stated or directly inferred from the provided research context; no contradictions or unsupported statements were found.",
+        "details": {
+          "total_claims": 4,
+          "supported_claims": 4
+        }
+      },
+      "context_relevance": {
+        "name": "context_relevance",
+        "score": 0.97,
+        "threshold": 0.7,
+        "passed": true,
+        "reasoning": "The chunk directly explains that active Vitamin D (calcitriol) binds VDR in enterocytes and upregulates calbindin-D9k, TRPV6, and PMCA1b, which together increase intestinal calcium absorption. This is precisely the mechanism asked for, with minimal extraneous information.",
+        "details": {
+          "chunk_count": 1
+        }
+      },
+      "answer_relevance": {
+        "name": "answer_relevance",
+        "score": 0.96,
+        "threshold": 0.8,
+        "passed": true,
+        "reasoning": "The response directly addresses how active Vitamin D (calcitriol) regulates intestinal calcium absorption by describing VDR binding, upregulation of specific transport proteins (calbindin-D9k, TRPV6, PMCA1b), and the resulting increase in transcellular calcium transport. It is concise, complete, and contains no irrelevant information.",
+        "details": {}
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "threshold": 0.8,
+        "passed": true,
+        "reasoning": "Valid citations across 4/4 statements. Bounds validity: 100%, Content overlap: 52%.",
+        "details": {
+          "total_citations": 4,
+          "valid_citations": 4,
+          "out_of_bounds_citations": [],
+          "sentence_count": 4,
+          "cited_sentence_count": 4,
+          "bounds_precision": 1.0,
+          "citation_coverage": 1.0,
+          "mean_lexical_overlap": 0.5163
+        }
+      },
+      "refusal_adherence": null,
+      "overall_score": 0.984,
+      "passed": true,
+      "claim_verifications": [
+        {
+          "claim": "Active Vitamin D (calcitriol / 1,25-dihydroxyvitamin D3) regulates intestinal calcium absorption through genomic pathways.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "Calcitriol (1,25-dihydroxyvitamin D3), the active hormonal form of Vitamin D, binds to the nuclear Vitamin D Receptor (VDR) in enterocytes. This upregulates the transcription of ... significantly increasing transcellular calcium absorption in the duodenum.",
+          "reasoning": "The research block explicitly describes calcitriol acting via the VDR to up\u2011regulate transcription, which is a genomic mechanism that increases calcium absorption."
+        },
+        {
+          "claim": "Calcitriol binds to the intracellular Vitamin D Receptor (VDR) in intestinal enterocytes.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "Calcitriol ... binds to the nuclear Vitamin D Receptor (VDR) in enterocytes.",
+          "reasoning": "The statement matches the exact wording in the research block."
+        },
+        {
+          "claim": "This transcriptional activation stimulates the synthesis of calbindin-D9k, the apical calcium channel TRPV6, and the basolateral calcium pump PMCA1b.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "This upregulates the transcription of calbindin-D9k, the apical calcium channel TRPV6, and the basolateral plasma membrane Ca2+-ATPase (PMCA1b).",
+          "reasoning": "The research block lists these three proteins as transcriptional targets of calcitriol\u2011VDR activation."
+        },
+        {
+          "claim": "Enhances active transcellular calcium transport across the duodenal mucosa into circulation.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "significantly increasing transcellular calcium absorption in the duodenum.",
+          "reasoning": "The increase in transcellular calcium absorption described in the block directly supports the claim of enhanced active transport across the duodenal mucosa."
+        }
+      ],
+      "execution_time_seconds": 20.149
+    },
+    {
+      "sample_id": "NUTRITION_003_IRON_INHIBITORS",
+      "query": "What dietary compounds inhibit non-heme iron absorption?",
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "threshold": 0.85,
+        "passed": true,
+        "reasoning": "All three extracted atomic claims are explicitly present in the provided research context; none are contradicted or unsupported.",
+        "details": {
+          "total_claims": 3,
+          "supported_claims": 3
+        }
+      },
+      "context_relevance": {
+        "name": "context_relevance",
+        "score": 0.96,
+        "threshold": 0.7,
+        "passed": true,
+        "reasoning": "The retrieved chunk directly lists dietary compounds (phytates, polyphenols/tannins, excess calcium) that inhibit non-heme iron absorption, fully addressing the user query with minimal extraneous information.",
+        "details": {
+          "chunk_count": 1
+        }
+      },
+      "answer_relevance": {
+        "name": "answer_relevance",
+        "score": 0.96,
+        "threshold": 0.8,
+        "passed": true,
+        "reasoning": "The response directly lists the dietary compounds that inhibit non\u2011heme iron absorption\u2014phytates, polyphenols/tannins, and calcium\u2014matching the query precisely and concisely without extraneous information.",
+        "details": {}
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "threshold": 0.8,
+        "passed": true,
+        "reasoning": "Valid citations across 4/4 statements. Bounds validity: 100%, Content overlap: 82%.",
+        "details": {
+          "total_citations": 4,
+          "valid_citations": 4,
+          "out_of_bounds_citations": [],
+          "sentence_count": 4,
+          "cited_sentence_count": 4,
+          "bounds_precision": 1.0,
+          "citation_coverage": 1.0,
+          "mean_lexical_overlap": 0.825
+        }
+      },
+      "refusal_adherence": null,
+      "overall_score": 0.982,
+      "passed": true,
+      "claim_verifications": [
+        {
+          "claim": "Phytates are found in whole grains and legumes, and they bind iron into insoluble complexes.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "Non-heme iron absorption is inhibited by several dietary factors: (1) Phytates found in whole grains and legumes, which bind iron into insoluble complexes.",
+          "reasoning": "The research block explicitly states that phytates are present in whole grains and legumes and that they bind iron into insoluble complexes, matching the claim."
+        },
+        {
+          "claim": "Polyphenols and tannins are present in tea and coffee, and they inhibit non\u2011heme iron absorption.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "Non-heme iron absorption is inhibited by several dietary factors: (2) Polyphenols and tannins in tea and coffee.",
+          "reasoning": "The research block directly lists polyphenols and tannins in tea and coffee as inhibitors of non\u2011heme iron absorption, which aligns with the claim."
+        },
+        {
+          "claim": "Excess calcium competitively interferes with iron transport.",
+          "citation_indices": [],
+          "status": "SUPPORTED",
+          "evidence": "Non-heme iron absorption is inhibited by several dietary factors: (3) Excess calcium, which competitively interferes with both non\u2011heme and heme iron transport.",
+          "reasoning": "The research block explicitly mentions that excess calcium competitively interferes with iron transport, supporting the claim."
+        }
+      ],
+      "execution_time_seconds": 10.225
+    },
+    {
+      "sample_id": "CONVERSATION_001_GREETING",
+      "query": "Hello! Can you introduce yourself?",
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 0.5,
+        "threshold": 0.85,
+        "passed": false,
+        "reasoning": "No context chunks provided for claim verification.",
+        "details": {}
+      },
+      "context_relevance": {
+        "name": "context_relevance",
+        "score": 0.0,
+        "threshold": 0.7,
+        "passed": false,
+        "reasoning": "No chunks were retrieved from the vector database.",
+        "details": {}
+      },
+      "answer_relevance": {
+        "name": "answer_relevance",
+        "score": 1.0,
+        "threshold": 0.8,
+        "passed": true,
+        "reasoning": "The response directly answers the user's request for an introduction by providing a clear greeting and a concise self-introduction, fully satisfying the query without irrelevant content.",
+        "details": {}
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "threshold": 0.8,
+        "passed": true,
+        "reasoning": "No context chunks provided; response correctly contained no citations.",
+        "details": {
+          "num_chunks": 0,
+          "found_citations": []
+        }
+      },
+      "refusal_adherence": null,
+      "overall_score": 1.0,
+      "passed": true,
+      "claim_verifications": [],
+      "execution_time_seconds": 9.817
+    },
+    {
+      "sample_id": "FALLBACK_001_UNGROUNDED_QUERY",
+      "query": "What is the latest quantum computing algorithm for Shor's factorization?",
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "threshold": 0.85,
+        "passed": true,
+        "reasoning": "No context chunks provided for claim verification.",
+        "details": {}
+      },
+      "context_relevance": {
+        "name": "context_relevance",
+        "score": 0.0,
+        "threshold": 0.7,
+        "passed": false,
+        "reasoning": "No chunks were retrieved from the vector database.",
+        "details": {}
+      },
+      "answer_relevance": {
+        "name": "answer_relevance",
+        "score": 0.0,
+        "threshold": 0.8,
+        "passed": false,
+        "reasoning": "The generated response does not address the user's query about the latest quantum computing algorithm for Shor's factorization. Instead, it incorrectly redirects to nutrition topics, providing no relevant information.",
+        "details": {}
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "threshold": 0.8,
+        "passed": true,
+        "reasoning": "No context chunks provided; response correctly contained no citations.",
+        "details": {
+          "num_chunks": 0,
+          "found_citations": []
+        }
+      },
+      "refusal_adherence": {
+        "name": "refusal_adherence",
+        "score": 1.0,
+        "threshold": 0.8,
+        "passed": true,
+        "reasoning": "The assistant correctly identified the lack of sufficient context, politely declined to provide an answer, and did not fabricate any ungrounded scientific facts.",
+        "details": {}
+      },
+      "overall_score": 1.0,
+      "passed": true,
+      "claim_verifications": [],
+      "execution_time_seconds": 1.423
+    }
+  ],
+  "timestamp": "2026-09-07T01:37:37.463786+00:00"
+}

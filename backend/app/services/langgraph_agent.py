@@ -42,7 +42,7 @@ from langchain_groq import ChatGroq
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
-from app.config import GROQ_API_KEY, RELEVANCE_THRESHOLD
+from app.config import GROQ_API_KEY, GROQ_MODEL, RELEVANCE_THRESHOLD
 from app.core.logging_config import logger
 from app.services.vector_store import get_embedding, match_documents
 
@@ -51,7 +51,7 @@ from app.services.vector_store import get_embedding, match_documents
 # ---------------------------------------------------------------------------
 
 llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
+    model=GROQ_MODEL,
     groq_api_key=GROQ_API_KEY,
     temperature=0.2,
     max_retries=2,  # automatic retry on transient Groq errors

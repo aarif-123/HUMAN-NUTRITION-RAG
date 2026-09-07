@@ -45,6 +45,7 @@ HEADERS: dict = {
 # LLM / Groq
 # ---------------------------------------------------------------------------
 GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "").strip()
+GROQ_MODEL: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b").strip()
 
 # ---------------------------------------------------------------------------
 # HuggingFace Inference API (used for embeddings — works on Vercel)
